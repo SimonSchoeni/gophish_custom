@@ -1,6 +1,18 @@
-var map = null
 var doPoll = true;
+function groupEventsByEmail(timeline) {
+    return timeline.reduce((acc, event) => {
+        const email = event.email || 'No Email';
+        if (!acc[email]) {
+            acc[email] = [];
+        }
+        acc[email].push(event);
+        return acc;
+    }, {});
+}
 
+function hasPropertyValue(arr, property, value) {
+    return arr.some(item => item[property] === value);
+}
 // statuses is a helper map to point result statuses to ui classes
 var statuses = {
     "Email Sent": {
@@ -35,6 +47,12 @@ var statuses = {
         label: "label-clicked",
         icon: "fa-mouse-pointer",
         point: "ct-point-clicked"
+    },
+    "Downloaded File": {
+        color: "#9511e2",
+        label: "label-downloaded",
+        icon: "fa-solid fa-download",
+        point: "ct-point-downloaded"
     },
     "Success": {
         color: "#f05b4f",
@@ -103,6 +121,7 @@ var statusMapping = {
     "Clicked Link": "clicked",
     "Submitted Data": "submitted_data",
     "Email Reported": "reported",
+    "Downloaded File": "downloaded"
 }
 
 // This is an underwhelming attempt at an enum
@@ -392,7 +411,7 @@ function renderTimeline(data) {
                 '    <span class="timeline-date">' + moment.utc(event.time).local().format('MMMM Do YYYY h:mm:ss a') + '</span>'
             if (event.details) {
                 details = JSON.parse(event.details)
-                if (event.message == "Clicked Link" || event.message == "Submitted Data") {
+                if (event.message == "Clicked Link" || event.message == "Submitted Data" || event.timeline == "Downloaded File") {
                     deviceView = renderDevice(details)
                     if (deviceView) {
                         results += deviceView
@@ -571,40 +590,7 @@ var renderPieChart = function (chartopts) {
     })
 }
 
-/* Updates the bubbles on the map
 
-@param {campaign.result[]} results - The campaign results to process
-*/
-var updateMap = function (results) {
-    if (!map) {
-        return
-    }
-    bubbles = []
-    $.each(campaign.results, function (i, result) {
-        // Check that it wasn't an internal IP
-        if (result.latitude == 0 && result.longitude == 0) {
-            return true;
-        }
-        newIP = true
-        $.each(bubbles, function (i, bubble) {
-            if (bubble.ip == result.ip) {
-                bubbles[i].radius += 1
-                newIP = false
-                return false
-            }
-        })
-        if (newIP) {
-            bubbles.push({
-                latitude: result.latitude,
-                longitude: result.longitude,
-                name: result.ip,
-                fillKey: "point",
-                radius: 2
-            })
-        }
-    })
-    map.bubbles(bubbles)
-}
 
 /**
  * Creates a status label for use in the results datatable
@@ -630,11 +616,11 @@ function createStatusLabel(status, send_date) {
  * * Map Bubbles
  * * Datatables
  */
+
 function poll() {
     api.campaignId.results(campaign.id)
         .success(function (c) {
             campaign = c
-            /* Update the timeline */
             var timeline_series_data = []
             $.each(campaign.timeline, function (i, event) {
                 var event_date = moment.utc(event.time).local()
@@ -652,12 +638,17 @@ function poll() {
             timeline_chart.series[0].update({
                 data: timeline_series_data
             })
-            /* Update the results donut chart */
             var email_series_data = {}
             // Load the initial data
             Object.keys(statusMapping).forEach(function (k) {
                 email_series_data[k] = 0
             });
+            var grouping = groupEventsByEmail(campaign.timeline);
+                $.each(grouping, function(i,g){
+                    if(hasPropertyValue(g,'message','Downloaded File')){
+                        email_series_data["Downloaded File"]++
+                    }
+                });
             $.each(campaign.results, function (i, result) {
                 email_series_data[result.status]++;
                 if (result.reported) {
@@ -689,7 +680,6 @@ function poll() {
                 })
             })
 
-            /* Update the datatable */
             resultsTable = $("#resultsTable").DataTable()
             resultsTable.rows().every(function (i, tableLoop, rowLoop) {
                 var row = this.row(i)
@@ -711,8 +701,6 @@ function poll() {
                 })
             })
             resultsTable.draw(false)
-            /* Update the map information */
-            updateMap(campaign.results)
             $('[data-toggle="tooltip"]').tooltip()
             $("#refresh_message").hide()
             $("#refresh_btn").show()
@@ -721,7 +709,6 @@ function poll() {
 
 function load() {
     campaign.id = window.location.pathname.split('/').slice(-1)[0]
-    var use_map = JSON.parse(localStorage.getItem('gophish.use_map'))
     api.campaignId.results(campaign.id)
         .success(function (c) {
             campaign = c
@@ -793,6 +780,13 @@ function load() {
                 Object.keys(statusMapping).forEach(function (k) {
                     email_series_data[k] = 0
                 });
+                //This is some fucked up stuff in order to get the events per E-Mail. If a user with a certain E-Mail downloaded it twice, it will only show up as one.
+                var grouping = groupEventsByEmail(campaign.timeline);
+                $.each(grouping, function(i,g){
+                    if(hasPropertyValue(g,'message','Downloaded File')){
+                        email_series_data["Downloaded File"]++
+                    }
+                });
                 $.each(campaign.results, function (i, result) {
                     resultsTable.row.add([
                         result.id,
@@ -810,6 +804,7 @@ function load() {
                         email_series_data['Email Reported']++
                     }
                     // Backfill status values
+                    //This complete structure is not very nice.
                     var step = progressListing.indexOf(result.status)
                     for (var i = 0; i < step; i++) {
                         email_series_data[progressListing[i]]++
@@ -876,27 +871,7 @@ function load() {
                         data: email_data,
                         colors: [statuses[status].color, '#dddddd']
                     })
-                })
-
-                if (use_map) {
-                    $("#resultsMapContainer").show()
-                    map = new Datamap({
-                        element: document.getElementById("resultsMap"),
-                        responsive: true,
-                        fills: {
-                            defaultFill: "#ffffff",
-                            point: "#283F50"
-                        },
-                        geographyConfig: {
-                            highlightFillColor: "#1abc9c",
-                            borderColor: "#283F50"
-                        },
-                        bubblesConfig: {
-                            borderColor: "#283F50"
-                        }
-                    });
-                }
-                updateMap(campaign.results)
+                })      
             }
         })
         .error(function () {
@@ -905,7 +880,7 @@ function load() {
         })
 }
 
-var setRefresh
+var setRefresh;
 
 function refresh() {
     if (!doPoll) {

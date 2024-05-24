@@ -263,7 +263,9 @@ p {
 .ct-point-clicked {
     fill: #F39C12 !important;
 }
-
+.ct-point-downloaded {
+    fill: #9511e2 !important;
+}
 .ct-point-opened {
     fill: #f9bf3b !important;
 }
@@ -377,6 +379,10 @@ p {
 .ct-slice-donut.ct-slice-donut-clicked {
     stroke: #F39C12 !important;
 }
+.ct-slice-donut.ct-slice-donut-downloaded {
+    stroke: #9511e2 !important;
+}
+
 
 .ct-slice-donut.ct-slice-donut-sending {
     stroke: #428bca !important;
@@ -401,6 +407,10 @@ p {
 .ct-legend-clicked {
     background-color: #F39C12 !important;
 }
+.ct-legend-downloaded {
+    background-color: #9511e2 !important;
+}
+
 
 .ct-legend-sending {
     background-color: #428bca !important;
@@ -408,6 +418,9 @@ p {
 
 .label-clicked {
     background-color: #F39C12 !important;
+}
+.label-downloaded {
+    background-color: #9511e2 !important;
 }
 
 .gophish-editor {
@@ -690,6 +703,10 @@ table.dataTable {
 .color-clicked {
     font-weight: bold;
     color: #f39c12;
+}
+.color-downloaded {
+    font-weight: bold;
+    color: #9511e2;
 }
 
 .color-reported {

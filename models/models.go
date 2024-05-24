@@ -49,6 +49,7 @@ const (
 	EventSendingError  string = "Error Sending Email"
 	EventOpened        string = "Email Opened"
 	EventClicked       string = "Clicked Link"
+	EventDownloaded    string = "Downloaded File"
 	EventDataSubmit    string = "Submitted Data"
 	EventReported      string = "Email Reported"
 	EventProxyRequest  string = "Proxied request"

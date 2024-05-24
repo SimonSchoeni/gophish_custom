@@ -34,6 +34,7 @@ type Result struct {
 	Longitude    float64   `json:"longitude"`
 	SendDate     time.Time `json:"send_date"`
 	Reported     bool      `json:"reported" sql:"not null"`
+	Downloaded   bool      `json:"downloaded"`
 	ModifiedDate time.Time `json:"modified_date"`
 	BaseRecipient
 }

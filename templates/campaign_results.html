@@ -20,6 +20,7 @@
         toggleChart('sent_chart', 'toggle_sent_chart');
         toggleChart('opened_chart', 'toggle_opened_chart');
         toggleChart('clicked_chart', 'toggle_clicked_chart');
+        toggleChart('downloaded_chart', 'toggle_downloaded_chart');
         toggleChart('submitted_data_chart', 'toggle_submitted_data_chart');
         toggleChart('reported_chart', 'toggle_reported_chart');
     });
@@ -59,6 +60,7 @@
                 <div class="dropdown-menu">
                     <label class="dropdown-item"><input type="checkbox" id="toggle_sent_chart" checked> Sent Emails</label>
                     <label class="dropdown-item"><input type="checkbox" id="toggle_opened_chart" checked> Opened Emails</label>
+                    <label class="dropdown-item"><input type="checkbox" id="toggle_downloaded_chart" checked> Downloaded File</label>
                     <label class="dropdown-item"><input type="checkbox" id="toggle_clicked_chart" checked> Clicked Links</label>
                     <label class="dropdown-item"><input type="checkbox" id="toggle_submitted_data_chart" checked> Submitted Data</label>
                     <label class="dropdown-item"><input type="checkbox" id="toggle_reported_chart" checked> Reported Emails</label>
@@ -92,6 +94,7 @@
                     <div id="opened_chart" style="height:200px;" class="col-lg-2 col-md-2"></div>
                     <div id="clicked_chart" style="height:200px;" class="col-lg-2 col-md-2"></div>
                     <div id="submitted_data_chart" style="height:200px;" class="col-lg-2 col-md-2"></div>
+                    <div id="downloaded_chart" style="height:200px;" class="col-lg-2 col-md-2"></div>
                     <div id="reported_chart" style="height:200px;" class="col-lg-2 col-md-2"></div>
                     <div style="height:200px;" class="col-lg-1 col-md-1"></div>
                 </div>
