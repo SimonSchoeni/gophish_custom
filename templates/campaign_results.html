@@ -1,4 +1,29 @@
 {{define "body"}}
+<script>
+    function toggleChart(chartId, checkboxId) {
+        var chart = document.getElementById(chartId);
+        var checkbox = document.getElementById(checkboxId);
+        checkbox.addEventListener('change', function() {
+            if (checkbox.checked) {
+                chart.style.display = 'block';
+            } else {
+                chart.style.display = 'none';
+            }
+        });
+        // Initial state
+        if (!checkbox.checked) {
+            chart.style.display = 'none';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleChart('sent_chart', 'toggle_sent_chart');
+        toggleChart('opened_chart', 'toggle_opened_chart');
+        toggleChart('clicked_chart', 'toggle_clicked_chart');
+        toggleChart('submitted_data_chart', 'toggle_submitted_data_chart');
+        toggleChart('reported_chart', 'toggle_reported_chart');
+    });
+</script>
 <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
     <div id="loading">
         <i class="fa fa-spinner fa-spin fa-4x"></i>
@@ -26,6 +51,19 @@
                     </li>
                 </ul>
             </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="true">
+                    <i class="fa fa-thin fa-filter"></i>Show Charts for<i class="fa fa-caret-down"></i>
+                </button>
+                <div class="dropdown-menu">
+                    <label class="dropdown-item"><input type="checkbox" id="toggle_sent_chart" checked> Sent Emails</label>
+                    <label class="dropdown-item"><input type="checkbox" id="toggle_opened_chart" checked> Opened Emails</label>
+                    <label class="dropdown-item"><input type="checkbox" id="toggle_clicked_chart" checked> Clicked Links</label>
+                    <label class="dropdown-item"><input type="checkbox" id="toggle_submitted_data_chart" checked> Submitted Data</label>
+                    <label class="dropdown-item"><input type="checkbox" id="toggle_reported_chart" checked> Reported Emails</label>
+                </div>
+            </div>
             <button id="complete_button" type="button" class="btn btn-blue" data-toggle="tooltip" onclick="completeCampaign()">
                 <i class="fa fa-flag-checkered"></i> Complete
             </button>
@@ -38,6 +76,7 @@
             <span id="refresh_message">
                 <i class="fa fa-spin fa-spinner"></i> Refreshing
             </span>
+            
         </div>
         <br />
         <div class="row">
@@ -86,6 +125,7 @@
     </div>
     <div id="flashes" class="row"></div>
 </div>
+
 {{end}} {{define "scripts"}}
 <script src="/js/dist/app/campaign_results.min.js"></script>
 {{end}}
