@@ -591,6 +591,84 @@ var renderPieChart = function (chartopts) {
 }
 
 
+var renderSpecificPercentage = function (chartopts) {
+    return Highcharts.chart(chartopts['elemId'], {
+        chart: {
+            type: 'pie',
+            events: {
+                load: function () {
+                    var chart = this,
+                        rend = chart.renderer,
+                        pie = chart.series[0],
+                        left = chart.plotLeft + pie.center[0],
+                        top = chart.plotTop + pie.center[1];
+                    this.innerText = rend.text(chartopts['data'][0].count, left, top).
+                    attr({
+                        'text-anchor': 'middle',
+                        'font-size': '24px',
+                        'font-weight': 'bold',
+                        'fill': chartopts['colors'][0],
+                        'font-family': 'Helvetica,Arial,sans-serif'
+                    }).add();
+                },
+                render: function () {
+                    this.innerText.attr({
+                        text: chartopts['data'][0].y+'%'
+                    });
+                }
+            }
+        },
+        title: {
+            text: chartopts['title']
+        },
+        plotOptions: {
+            pie: {
+                dataLabels: {
+                    enabled: true,
+                    formatter: function() {
+                        return this.y + '%';
+                    },
+                    distance: -30, // Adjust as needed to position the labels inside the pie slices
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        color: 'black' // Change to a more visible color if needed
+                    },
+                    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Optional: Adds a background to the text for better visibility
+                    borderWidth: 0, // No border to ensure smooth text
+                    borderRadius: 0 // No border radius to keep it clean
+                }
+            }
+        },
+        credits: {
+            enabled: true,
+            text: chartopts.credits,
+            position: {
+                align: "center"
+            },
+            style: {
+                fontSize: "15px"
+            }
+        },
+        tooltip: {
+            formatter: function () {
+                if (this.key == undefined) {
+                    return false;
+                }
+                return '<span style="color:' + this.color + '">\u25CF</span>' + this.point.name + ': <b>' + this.y + '%</b><br/>';
+            }
+        },
+        series: [{
+            data: chartopts['data'],
+            colors: chartopts['colors']
+        }]
+    });
+    
+    
+    
+}
+
+
 
 /**
  * Creates a status label for use in the results datatable
@@ -871,7 +949,9 @@ function load() {
                         data: email_data,
                         colors: [statuses[status].color, '#dddddd']
                     })
-                })      
+                })
+                performCharting(email_series_data)
+  
             }
         })
         .error(function () {
@@ -880,6 +960,63 @@ function load() {
         })
 }
 
+function performCharting(email_series_data)
+{
+    let submitted_Data = "Submitted Data";
+    let clicked_Link = "Clicked Link";
+    let total_Data = "Email Sent";
+    let submitted_amount = email_series_data[submitted_Data];
+    let clicked_amount = email_series_data[clicked_Link];
+    console.log(campaign);
+    console.log(campaign.results.length);
+    let total_amount = campaign.results.length;
+
+    //Clicks vs Submitted Data
+    let prepSubmitted = {
+        name: 'Submitted Data',
+        y: Math.floor(submitted_amount / clicked_amount) * 100,
+        count: submitted_amount
+    }
+    let prepClicked = {
+        name: 'Clicked Link',
+        y: Math.floor(((clicked_amount-submitted_amount) / clicked_amount) * 100),
+        count: clicked_amount-submitted_amount
+    }
+    let title_clicked_vs_submitted = ""+prepSubmitted.y+"% ("+prepSubmitted.count+") of the users who clicked the link submitted data whereas "+prepClicked.y+"% ("+prepClicked.count+") of users only clicked the link";
+    let clicked_vs_submitted = {
+        elemId:'clicked_vs_submitted_chart',
+        title: 'Clicked Link vs Submitted Data',
+        name: 'Clicked Link vs Submitted Data',
+        colors: [statuses[submitted_Data].color, statuses[clicked_Link].color],
+        data: [prepSubmitted, prepClicked],
+        credits: title_clicked_vs_submitted
+    }
+    renderSpecificPercentage(clicked_vs_submitted);
+
+    //Clicked vs opened sent_vs_clicked_chart
+    let clicked_links = {
+        name: 'Clicked Link',
+        y: Math.floor(clicked_amount / total_amount) * 100,
+        count: submitted_amount
+    }
+    let no_interaction = {
+        name: 'No interaction',
+        y: Math.floor(((total_amount-clicked_amount) / total_amount) * 100),
+        count: total_amount-clicked_amount
+    }
+    console.log(campaign);
+
+    let title_sent_vs_clicked = ""+clicked_links.y+"% ("+clicked_links.count+") of the users who received the mail clicked the link, "+no_interaction.y+"% ("+no_interaction.count+") of users did not interact with the email.";
+    let sent_vs_clicked = {
+        elemId:'sent_vs_clicked_chart',
+        title: 'Overview of the interaction with the phishing mail',
+        name: 'Overview of the interaction with the phishing mail',
+        colors: [statuses[total_Data].color, statuses[clicked_Link].color],
+        data: [no_interaction, clicked_links],
+        credits: title_sent_vs_clicked
+    }
+    renderSpecificPercentage(sent_vs_clicked)
+}
 var setRefresh;
 
 function refresh() {

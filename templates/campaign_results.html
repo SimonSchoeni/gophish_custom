@@ -96,6 +96,7 @@
                     <div id="submitted_data_chart" style="height:200px;" class="col-lg-2 col-md-2"></div>
                     <div id="downloaded_chart" style="height:200px;" class="col-lg-2 col-md-2"></div>
                     <div id="reported_chart" style="height:200px;" class="col-lg-2 col-md-2"></div>
+
                     <div style="height:200px;" class="col-lg-1 col-md-1"></div>
                 </div>
                 <div class="row" id="resultsMapContainer">
@@ -125,10 +126,17 @@
                 </tbody>
             </table>
         </div>
+        <div class="row">
+            <h2>Charting</h2>
+            <div id="sent_vs_clicked_chart" style="width: 70%; height: 400px;" class="col-lg-2 col-md-2 row"></div>
+            <div id="clicked_vs_submitted_chart" style="width: 70%; height: 400px;" class="col-lg-2 col-md-2 row"></div>
+
+        </div>
     </div>
     <div id="flashes" class="row"></div>
 </div>
 
 {{end}} {{define "scripts"}}
-<script src="/js/dist/app/campaign_results.min.js"></script>
+<script src="/js/src/app/campaign_results.js"></script>
+
 {{end}}
