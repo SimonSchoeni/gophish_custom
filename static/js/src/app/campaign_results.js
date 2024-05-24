@@ -13,6 +13,30 @@ function groupEventsByEmail(timeline) {
 function hasPropertyValue(arr, property, value) {
     return arr.some(item => item[property] === value);
 }
+
+var predefinedColors = [
+    "#1e81b0",
+    "#eeeee4",
+    "#e28743",
+    "#eab676",
+    "#76b5c5",
+    "#873e23",
+    "#abdbe3",
+    "#063970",
+    "#A03232",
+    "#E64A19",
+    "#7CB342",
+    "#9C27B0",
+    "#5C6BC0",
+    "#F06292",
+    "#4DB6AC",
+    "#FF6F00",
+    "#4A148C",
+    "#B71C1C",
+    "#9E9E9E",
+    "#ECEFF1",
+    "#E3F2FD",
+]
 // statuses is a helper map to point result statuses to ui classes
 var statuses = {
     "Email Sent": {
@@ -625,9 +649,7 @@ var renderSpecificPercentage = function (chartopts) {
             pie: {
                 dataLabels: {
                     enabled: true,
-                    formatter: function() {
-                        return this.y + '%';
-                    },
+                    formatter: chartopts.formatter,
                     distance: -30, // Adjust as needed to position the labels inside the pie slices
                     style: {
                         fontSize: '14px',
@@ -644,7 +666,8 @@ var renderSpecificPercentage = function (chartopts) {
             enabled: true,
             text: chartopts.credits,
             position: {
-                align: "center"
+                align: "center",
+                y: -10
             },
             style: {
                 fontSize: "15px"
@@ -964,6 +987,10 @@ function performCharting(email_series_data)
 {
     let submitted_Data = "Submitted Data";
     let clicked_Link = "Clicked Link";
+    let did_download = "Downloaded File";
+    let default_formatter = function() {
+        return this.y + '%';
+    };
     let total_Data = "Email Sent";
     let submitted_amount = email_series_data[submitted_Data];
     let clicked_amount = email_series_data[clicked_Link];
@@ -988,6 +1015,7 @@ function performCharting(email_series_data)
         title: 'Clicked Link vs Submitted Data',
         name: 'Clicked Link vs Submitted Data',
         colors: [statuses[submitted_Data].color, statuses[clicked_Link].color],
+        formatter: default_formatter,
         data: [prepSubmitted, prepClicked],
         credits: title_clicked_vs_submitted
     }
@@ -1012,10 +1040,73 @@ function performCharting(email_series_data)
         title: 'Overview of the interaction with the phishing mail',
         name: 'Overview of the interaction with the phishing mail',
         colors: [statuses[total_Data].color, statuses[clicked_Link].color],
+        formatter: default_formatter,
         data: [no_interaction, clicked_links],
         credits: title_sent_vs_clicked
     }
     renderSpecificPercentage(sent_vs_clicked)
+
+    //Do Position Specific Stuff
+    let position_data = {};
+    /*
+        position_data = {
+            "Position1": {
+                "Submitted Data": 1
+                "Clicked Link": 2
+            }
+            "Position2": {
+                "Submitted Data": 1
+                "Clicked Link":15
+            }
+        }
+    */
+        let known_mails = [];
+        $.each(campaign.results, function (i, result) {
+            if(known_mails.indexOf(result.email == -1)){
+                if(!position_data.hasOwnProperty(result.position)){
+                    position_data[result.position] = {};
+                    position_data[result.position]["name"] = result.position;
+                    position_data[result.position][clicked_Link] = 0;
+                    position_data[result.position][submitted_Data] =0;
+                    position_data[result.position][did_download] =0;
+                }
+                let evs = groupEventsByEmail(campaign.timeline);
+                $.each(evs, (i,g) => {
+
+                if(hasPropertyValue(g, "message", clicked_Link)){
+                        position_data[result.position][clicked_Link]++;
+                }
+                if(hasPropertyValue(g,"message", submitted_Data)){
+                        position_data[result.position][submitted_Data]++;
+                }
+
+                if(hasPropertyValue(g,"message", did_download)){
+                    position_data[result.position][did_download]++;
+                }
+            })
+            }    
+        });
+        //For clicks
+        let data = []
+        let click_pos_credits = "Following clicks were observed for each position:<br> ";
+        let count = 0;
+        $.each(position_data,(i,p) => {
+            
+            let spec = {name: p.name, y: (p[clicked_Link]/clicked_amount*100), count: p[clicked_Link]};
+            click_pos_credits += "<span style=\"background-color:"+predefinedColors[count]+"\">"+p.name+": "+spec.y+"%"+"("+spec.count+")</span><br>";
+            count++;
+            data.push(spec);
+        });
+        let clicked_per_position = {
+            elemId:'clicked_position_chart',
+            title: 'Overview of the clicks per position',
+            name: 'Overview of the clicks per position',
+            colors: predefinedColors,
+            formatter: function () {return this.y+"%" +"<br>("+this.key+")"},
+            data: data,
+            credits: click_pos_credits
+        }
+        renderSpecificPercentage(clicked_per_position)
 }
 var setRefresh;
 
