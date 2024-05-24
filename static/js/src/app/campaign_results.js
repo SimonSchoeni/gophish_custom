@@ -667,11 +667,14 @@ var renderSpecificPercentage = function (chartopts) {
             text: chartopts.credits,
             position: {
                 align: "center",
-                y: -10
             },
             style: {
-                fontSize: "15px"
+                fontSize: "15px",
+                whiteSpace:'nowrap',
             }
+        },
+        style:{
+            width:300
         },
         tooltip: {
             formatter: function () {
@@ -988,6 +991,7 @@ function performCharting(email_series_data)
     let submitted_Data = "Submitted Data";
     let clicked_Link = "Clicked Link";
     let did_download = "Downloaded File";
+    let downloads = email_series_data[did_download]
     let default_formatter = function() {
         return this.y + '%';
     };
@@ -999,15 +1003,18 @@ function performCharting(email_series_data)
     let total_amount = campaign.results.length;
 
     //Clicks vs Submitted Data
-    let prepSubmitted = {
-        name: 'Submitted Data',
-        y: Math.floor(submitted_amount / clicked_amount) * 100,
-        count: submitted_amount
-    }
+
+
+    console.log(Math.floor(submitted_amount / clicked_amount) * 100);
     let prepClicked = {
         name: 'Clicked Link',
         y: Math.floor(((clicked_amount-submitted_amount) / clicked_amount) * 100),
         count: clicked_amount-submitted_amount
+    }
+    let prepSubmitted = {
+        name: 'Submitted Data',
+        y: Math.round((submitted_amount / clicked_amount) * 100),
+        count: submitted_amount
     }
     let title_clicked_vs_submitted = ""+prepSubmitted.y+"% ("+prepSubmitted.count+") of the users who clicked the link submitted data whereas "+prepClicked.y+"% ("+prepClicked.count+") of users only clicked the link";
     let clicked_vs_submitted = {
@@ -1024,7 +1031,7 @@ function performCharting(email_series_data)
     //Clicked vs opened sent_vs_clicked_chart
     let clicked_links = {
         name: 'Clicked Link',
-        y: Math.floor(clicked_amount / total_amount) * 100,
+        y: Math.floor(clicked_amount / total_amount * 100),
         count: submitted_amount
     }
     let no_interaction = {
@@ -1032,7 +1039,6 @@ function performCharting(email_series_data)
         y: Math.floor(((total_amount-clicked_amount) / total_amount) * 100),
         count: total_amount-clicked_amount
     }
-    console.log(campaign);
 
     let title_sent_vs_clicked = ""+clicked_links.y+"% ("+clicked_links.count+") of the users who received the mail clicked the link, "+no_interaction.y+"% ("+no_interaction.count+") of users did not interact with the email.";
     let sent_vs_clicked = {
@@ -1087,26 +1093,86 @@ function performCharting(email_series_data)
             }    
         });
         //For clicks
-        let data = []
-        let click_pos_credits = "Following clicks were observed for each position:<br> ";
-        let count = 0;
-        $.each(position_data,(i,p) => {
-            
-            let spec = {name: p.name, y: (p[clicked_Link]/clicked_amount*100), count: p[clicked_Link]};
-            click_pos_credits += "<span style=\"background-color:"+predefinedColors[count]+"\">"+p.name+": "+spec.y+"%"+"("+spec.count+")</span><br>";
-            count++;
-            data.push(spec);
-        });
-        let clicked_per_position = {
-            elemId:'clicked_position_chart',
-            title: 'Overview of the clicks per position',
-            name: 'Overview of the clicks per position',
-            colors: predefinedColors,
-            formatter: function () {return this.y+"%" +"<br>("+this.key+")"},
-            data: data,
-            credits: click_pos_credits
+        if(clicked_amount != 0){
+            let data = []
+            let click_pos_credits = "Following clicks were observed for each position:<br> ";
+            let count = 0;
+            $.each(position_data,(i,p) => {
+                if(p[clicked_Link] != 0){
+                    let spec = {name: p.name, y: (p[clicked_Link]/clicked_amount*100), count: p[clicked_Link]};
+                    click_pos_credits += "<span style=\"color:"+predefinedColors[count]+"\">"+p.name+": "+spec.y+"%"+"("+spec.count+")</span><br>";
+                    data.push(spec);
+                }
+                count++;
+            });
+            click_pos_credits += ""
+            let clicked_per_position = {
+                elemId:'clicked_position_chart',
+                title: 'Overview of the clicks per position',
+                name: 'Overview of the clicks per position',
+                colors: predefinedColors,
+                formatter: function () {return this.y+"%" +"<br>("+this.key+")"},
+                data: data,
+                credits: ""
+            };
+            renderSpecificPercentage(clicked_per_position);
+            document.getElementById('clicked_position_text').innerHTML = click_pos_credits;
         }
-        renderSpecificPercentage(clicked_per_position)
+
+
+        //for Submissions
+        /*if(submitted_amount != 0){
+            let sub_pos_data = []
+            let sub_pos_credits = "Following data submissions were observed for each position:<br> ";
+            count = 0;
+            $.each(position_data,(i,p) => {
+                if(p[submitted_Data] != 0){
+                    let spec = {name: p.name, y: (p[submitted_Data]/submitted_amount*100), count: p[submitted_Data]};
+                    sub_pos_data += "<span style=\"color:"+predefinedColors[count]+"\">"+p.name+": "+spec.y+"%"+"("+spec.count+")</span><br>";
+                    data.push(spec);
+                }
+                count++;
+            });
+            click_pos_credits += ""
+            let sub_per_position = {
+                elemId:'sub_position_chart',
+                title: 'Overview of the submissions per position',
+                name: 'Overview of the submissions per position',
+                colors: predefinedColors,
+                formatter: function () {return this.y+"%" +"<br>("+this.key+")"},
+                data: sub_pos_data,
+                credits: ""
+            };
+            renderSpecificPercentage(sub_per_position);
+            document.getElementById('sub_position_text').innerHTML = sub_pos_credits;
+        }
+        
+        //for downloads
+        if(downloads != 0){
+            let down_pos_data = []
+            let down_pos_credits = "Following downloads were observed for each position:<br> ";
+            count = 0;
+            $.each(position_data,(i,p) => {
+                if(p[did_download] != 0){
+                    let spec = {name: p.name, y: (p[did_download]/downloads*100), count: p[did_download]};
+                    sub_pos_data += "<span style=\"color:"+predefinedColors[count]+"\">"+p.name+": "+spec.y+"%"+"("+spec.count+")</span><br>";
+                    data.push(spec);
+                }
+                count++;
+            });
+            click_pos_credits += ""
+            let sub_per_position = {
+                elemId:'sub_position_chart',
+                title: 'Overview of the submissions per position',
+                name: 'Overview of the submissions per position',
+                colors: predefinedColors,
+                formatter: function () {return this.y+"%" +"<br>("+this.key+")"},
+                data: sub_pos_data,
+                credits: ""
+            };
+            renderSpecificPercentage(sub_per_position);
+            document.getElementById('sub_position_text').innerHTML = sub_pos_credits;*/
+        
 }
 var setRefresh;
 
