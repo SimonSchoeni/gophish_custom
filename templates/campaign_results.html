@@ -138,13 +138,14 @@
             <div class="row" style="width:70%; text-align: center;">
                 <text class="highcharts-credits" style="cursor:pointer;color:#999999;font-size:15px;white-space:nowrap;fill:#999999;" id="sub_position_text"></text>
             </div>
-
         </div>
     </div>
+    <p id="testing" class="testing">AAAA</p>
     <div id="flashes" class="row"></div>
 </div>
 
 {{end}} {{define "scripts"}}
+<script>var exports = {};</script>
 <script src="/js/src/app/campaign_results.js"></script>
-
+<script type="module" src="/ts/dist/bundle.js"></script>
 {{end}}

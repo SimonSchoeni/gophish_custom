@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "es6",
+    "target": "es6",
+    "sourceMap": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "outDir": "./dist/",
+    "typeRoots": [
+      "node_modules/@types"
+    ]
+  },
+  "compileOnSave": true,
+  "exclude": [
+    "node_modules"
+  ]
+}

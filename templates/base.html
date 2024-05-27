@@ -21,6 +21,8 @@
         api_key : {{ .User.ApiKey }},
         username : {{ .User.Username }}
     }
+    localStorage.setItem("api_key", user.api_key);
+    localStorage.setItem("username", user.username);
     {{end}}
     {{if .Token}}
         var csrf_token = {{.Token}}
