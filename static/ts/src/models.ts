@@ -1,6 +1,7 @@
 import { Utils } from "./utils";
 
 export module Models{
+
     export enum Status_Codes{
         Sent = "Email Sent",
         MailSent= "Emails Sent",
@@ -57,6 +58,13 @@ export module Models{
             return new DisplayDefinition(Status_Codes.None,"","","","");
         }
     }
+    export class PositionStatusCount{
+        eventType: Status_Codes = Status_Codes.None;
+        position: String = "";
+        count: number = 0;
+    }
+
+    
     export class DisplayDefinition{
         color: string = "";
         icon: string = "";
